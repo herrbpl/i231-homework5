@@ -1,7 +1,7 @@
 
 import java.util.*;
 
-public class TreeNode {
+public class TreeNode implements Iterator<TreeNode>{
 
 	private String name;
 	private TreeNode firstChild;
@@ -80,5 +80,59 @@ public class TreeNode {
 
 	public void setNextSibling(TreeNode nextSibling) {
 		this.nextSibling = nextSibling;
+	}
+	
+	/**
+	 * Adds children to tree. If this does not have children yet
+	 * we add child as first children, otherwise we add child as end of 
+	 * children chain
+	 * @param child
+	 */
+	public void addChild(TreeNode child) {
+		// if null, we do not add anything
+		if (child == null) return;
+		// iterator to find last existing sibling
+		Iterator<TreeNode> children = children();
+		
+		// if child already has some children, we should make sure none
+		// of those point back to any other member of tree to avoid loops
+		
+		
+		// if this does not have children, add
+		if (children == null) {
+			setFirstChild(child);
+		} else {
+			// find last existing sibling
+			while (children.hasNext()) {
+				children = children.next();
+			}
+			// add new child to be last sibling
+			((TreeNode)children).setNextSibling(child);
+		}
+		
+	}
+
+	/**
+	 * get parent node of current node.
+	 * @return parent node or null
+	 */
+	public TreeNode getParent() {
+		throw new UnsupportedOperationException();
+	}
+	
+	public Iterator<TreeNode> children() {
+		return getFirstChild();
+	}
+	
+	@Override
+	public boolean hasNext() {
+		// TODO Auto-generated method stub
+		return (getNextSibling() == null);
+	}
+
+	@Override
+	public TreeNode next() {
+		// TODO Auto-generated method stub
+		return getNextSibling();
 	}
 }
