@@ -198,12 +198,12 @@ public class TreeNode implements Iterator<TreeNode> {
 	 * @return
 	 */
 	public TreeNode find(String name, int position) {
-		
+		//System.out.println(String.format("me:'%s', search:'%s', position:%d", this.getName(),name, position));
 		TreeNode result = null;		
 		int posCounter = position;
 		
-		if (this.getName() == name ) {
-			System.out.println("Find instance with name");
+		if (this.getName().equals(name) ) {
+			//System.out.println("Find instance with name");
 			posCounter--;
 		}
 		if (posCounter <= 0) return this;

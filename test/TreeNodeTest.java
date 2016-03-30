@@ -69,8 +69,15 @@ public class TreeNodeTest {
 		assertNotNull("Expected to find 'child5:5'", find);
 		assertEquals("child5:5", find.getName());
 		
+		root.addChild("test123");
+		root.addChild("test123");
+		root.addChild("test123");
+		find = root.find("test123", 2);
+		assertNotNull("Expected to find 'test123'", find);
+		assertEquals("test123", find.getName());
 		
-		
+		find = root.find("test123", 5);
+		assertNull("Expected to find nothing", find);
 		
 	}
 
