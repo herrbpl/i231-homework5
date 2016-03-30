@@ -32,6 +32,15 @@ public class TreeNodeTest {
 		
 	}
 	
+	@Test(timeout = 1000)
+	public void testNameValidator() {
+		assertFalse(TreeNode.validNodeName(" "));
+		assertFalse(TreeNode.validNodeName(","));
+		assertFalse(TreeNode.validNodeName("(  "));
+		assertFalse(TreeNode.validNodeName(")"));
+		assertFalse(TreeNode.validNodeName("A,\t"));
+	}
+	
 	@Test(expected = RuntimeException.class)
 	public void testInvalidNodeName() {
 		TreeNode root = new TreeNode(",");

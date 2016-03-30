@@ -3,7 +3,6 @@ import java.util.*;
 
 public class TreeNode implements Iterator<TreeNode> {
 
-
 	private String name;
 	private TreeNode firstChild;
 	private TreeNode nextSibling;
@@ -52,14 +51,120 @@ public class TreeNode implements Iterator<TreeNode> {
 	 * @return true if name is valid
 	 */
 	public static boolean validNodeName(String n) {
-		if (n.matches("[,\\s()]")) {
+		if (n.matches(".*([,\\s()])+.*")) {
 			return false;
 		}
+		if (n.equals("")) return false;
 		return true;
 	}
 
 	public static TreeNode parsePrefix(String s) {
-		return null; // TODO!!! return the root
+
+		// start parsing
+		char c = ' ';
+		StringBuilder work = new StringBuilder();
+
+		ArrayList<TreeNode> stack = new ArrayList<TreeNode>();
+
+		TreeNode root = new TreeNode("root"); // this we must hide when
+												// returning results.
+
+		String name = "";
+		int i;
+		for (i = 0; i < s.length(); i++) {
+
+			c = s.charAt(i);
+
+			System.out.println(String.format("%d:%s", i, c));
+
+			switch (c) {
+			case '(':
+
+				name = work.toString();
+				if (!validNodeName(name)) {
+					throw new RuntimeException(String.format(
+							"Invalid character '%s' in %s at position %d! Node name expected but '%s' is not valid name.",
+							c, s, i, name));
+				}
+				// push existing root to stack
+				stack.add(stack.size(), root);
+				// set current root to new item.
+				root = new TreeNode(name);
+				work.setLength(0);
+				break;
+			case ')':
+
+				name = work.toString();
+				if (!validNodeName(name)) {
+					throw new RuntimeException(String.format(
+							"Invalid character '%s' in %s at position %d! Node name expected but '%s' is not valid name.",
+							c, s, i, name));
+				}
+
+				// add child to current root
+				root.addChild(name);
+
+				// if stack is empty, then cannot pop
+				if (stack.size() == 0) {
+					throw new RuntimeException(String.format(
+							"Invalid character '%s' in %s at position %d! Node name or '(' expected.", c, s, i));
+				}
+				// add current root to parent children
+				stack.get(stack.size() - 1).addChild(root);
+
+				// pop stack
+				root = stack.remove(stack.size() - 1);
+				work.setLength(0);
+				break;
+			case ',':
+				// check if name exist.
+				name = work.toString();
+				System.out.println(String.format("'%s'", name));
+				if (!validNodeName(name)) {
+					throw new RuntimeException(String.format(
+							"Invalid character '%s' in %s at position %d! Node name expected but '%s' is not valid name.",
+							c, s, i, name));
+				}
+				// add to root as children
+				root.addChild(name);
+				work.setLength(0); // reset work buffer
+
+				break;
+			default:
+				work.append(c);
+				if (!validNodeName(work.toString())) {
+					throw new RuntimeException(String.format("Invalid character '%s' in %s at position %d!", c, s, i));
+				}
+				break;
+
+			}
+
+		}
+
+		// happens when there are no children
+		if (work.length() != 0) {
+			name = work.toString();
+			if (!validNodeName(name)) {
+				throw new RuntimeException(String.format(
+						"Invalid character '%s' in %s at position %d! Node name expected but '%s' is not valid name.",
+						c, s, i, name));
+			}
+			root.addChild(name);
+			work.setLength(0); // reset work buffer
+			stack.add(stack.size(), root);
+		}
+
+		// if stack is not empty, premature end of input reached
+		if (stack.size() != 1) {
+			throw new RuntimeException(
+					String.format("Invalid input '%s'. Premature end of input at position %d", s, i));
+		}
+
+		root = stack.remove(stack.size() - 1);
+
+		// return;
+		return root.getFirstChild();
+
 	}
 
 	public String rightParentheticRepresentation() {
@@ -288,23 +393,22 @@ public class TreeNode implements Iterator<TreeNode> {
 		result[0] = this;
 
 		// get children
-		
 
 		Iterator<TreeNode> children = children();
-	    while (children != null) {
-	    	// get array of children
-	    	TreeNode[] childArray = ((TreeNode)children).asArray();
-	    	
-	    	// copy to root
-	    	int pos = result.length;
-	    	result =  Arrays.copyOf(result, childArray.length+result.length);
-	    	for (int i = 0; i < childArray.length; i++) {
-				result[pos+i] = childArray[i];
+		while (children != null) {
+			// get array of children
+			TreeNode[] childArray = ((TreeNode) children).asArray();
+
+			// copy to root
+			int pos = result.length;
+			result = Arrays.copyOf(result, childArray.length + result.length);
+			for (int i = 0; i < childArray.length; i++) {
+				result[pos + i] = childArray[i];
 			}
-	    	
-	        children = (TreeNode)children.next();
-	      }
-		
+
+			children = (TreeNode) children.next();
+		}
+
 		return result;
 	}
 
