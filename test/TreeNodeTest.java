@@ -8,6 +8,39 @@ import org.junit.Test;
  */
 public class TreeNodeTest {
 
+	@Test(timeout = 1000)
+	public void testAsArray() {		
+		TreeNode root = new TreeNode("root", null, null);
+		TreeNode child1, child2;
+
+		child1 = null;
+		child2 = null;
+		
+		for (int i = 0; i < 10; i++) {
+			child1 = new TreeNode(String.format("child%d", i), null, null);
+			for (int j = 0; j < 10; j++) {
+				child2 = new TreeNode(String.format("child%d:%d", i, j), null, null);
+				child1.addChild(child2);				
+			}
+			root.addChild(child1);
+		}
+		
+		TreeNode[] aTest = root.asArray();
+		for (int i = 0; i < aTest.length; i++) {
+			System.out.println(aTest[i].getName());
+		}
+		
+	}
+	
+	@Test(expected = RuntimeException.class)
+	public void testInvalidNodeName() {
+		TreeNode root = new TreeNode(",");
+		root.addChild("  ");
+		root.addChild("(");
+		root.addChild(")xxx");
+		root.addChild("[ss");
+	}
+	
 	@Test(expected = RuntimeException.class)
 	public void testAddChildDouble() {
 		TreeNode root = new TreeNode("root", null, null);

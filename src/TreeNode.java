@@ -3,6 +3,7 @@ import java.util.*;
 
 public class TreeNode implements Iterator<TreeNode> {
 
+
 	private String name;
 	private TreeNode firstChild;
 	private TreeNode nextSibling;
@@ -11,7 +12,8 @@ public class TreeNode implements Iterator<TreeNode> {
 	 * TreeNode object / node
 	 * 
 	 * @param n
-	 *            - Name of node
+	 *            - Name of node, Node name must be non-empty and must not
+	 *            contain round brackets, commas and whitespace symbols.
 	 * @param d
 	 *            - first child
 	 * @param r
@@ -25,6 +27,21 @@ public class TreeNode implements Iterator<TreeNode> {
 		this.setName(n);
 		this.setFirstChild(d);
 		this.setNextSibling(r);
+	}
+
+	/**
+	 * Creates TreNode with null child and next sibiling
+	 * 
+	 * @param n
+	 */
+	TreeNode(String n) {
+		if (!TreeNode.validNodeName(n)) {
+			throw new IllegalArgumentException(String.format("Invalid node name '%s'", n));
+		}
+		this.setName(n);
+		this.setFirstChild(null);
+		this.setNextSibling(null);
+
 	}
 
 	/**
@@ -198,19 +215,21 @@ public class TreeNode implements Iterator<TreeNode> {
 	 * @return
 	 */
 	public TreeNode find(String name, int position) {
-		//System.out.println(String.format("me:'%s', search:'%s', position:%d", this.getName(),name, position));
-		TreeNode result = null;		
+		// System.out.println(String.format("me:'%s', search:'%s', position:%d",
+		// this.getName(),name, position));
+		TreeNode result = null;
 		int posCounter = position;
-		
-		if (this.getName().equals(name) ) {
-			//System.out.println("Find instance with name");
+
+		if (this.getName().equals(name)) {
+			// System.out.println("Find instance with name");
 			posCounter--;
 		}
-		if (posCounter <= 0) return this;
-		
+		if (posCounter <= 0)
+			return this;
+
 		// TODO Auto-generated method stub
 		Iterator<TreeNode> children = children();
-		
+
 		// no children for node
 		if (children == null)
 			return null;
@@ -225,12 +244,12 @@ public class TreeNode implements Iterator<TreeNode> {
 			children = children.next();
 
 			// check for child name
-			if (((TreeNode) children).getName() == name ) {
+			if (((TreeNode) children).getName() == name) {
 				System.out.println("Find instance with name");
 				posCounter--;
 			}
-			if (posCounter <= 0) return ((TreeNode) children);
-			
+			if (posCounter <= 0)
+				return ((TreeNode) children);
 
 			// no children for node
 			if (children == null)
@@ -244,6 +263,58 @@ public class TreeNode implements Iterator<TreeNode> {
 
 		return null;
 
+	}
+
+	/**
+	 * Returns first instance of child named name
+	 * 
+	 * @param name
+	 *            - name searched for
+	 * @return TreeNode found or null
+	 */
+	public TreeNode find(String name) {
+		return this.find(name, 1);
+	}
+
+	/**
+	 * Returns whole tree as array
+	 * 
+	 * @return
+	 */
+	public TreeNode[] asArray() {
+		TreeNode[] result;
+		result = new TreeNode[1]; // self
+
+		result[0] = this;
+
+		// get children
+		
+
+		Iterator<TreeNode> children = children();
+	    while (children != null) {
+	    	// get array of children
+	    	TreeNode[] childArray = ((TreeNode)children).asArray();
+	    	
+	    	// copy to root
+	    	int pos = result.length;
+	    	result =  Arrays.copyOf(result, childArray.length+result.length);
+	    	for (int i = 0; i < childArray.length; i++) {
+				result[pos+i] = childArray[i];
+			}
+	    	
+	        children = (TreeNode)children.next();
+	      }
+		
+		return result;
+	}
+
+	/**
+	 * Checks if current treenode has children
+	 * 
+	 * @return true if no children, false if not
+	 */
+	public boolean isLeaf() {
+		return (getFirstChild() == null);
 	}
 
 	/**
