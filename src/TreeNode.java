@@ -65,10 +65,13 @@ public class TreeNode implements Iterator<TreeNode> {
 		StringBuilder work = new StringBuilder();
 
 		ArrayList<TreeNode> stack = new ArrayList<TreeNode>();
-
-		TreeNode root = new TreeNode("root"); // this we must hide when
-												// returning results.
-
+		
+		TreeNode root = new TreeNode("root"); // this we must hide 
+												
+		stack.add(root);
+		
+		TreeNode current = null;
+		
 		String name = "";
 		int i;
 		for (i = 0; i < s.length(); i++) {
@@ -86,38 +89,22 @@ public class TreeNode implements Iterator<TreeNode> {
 							"Invalid character '%s' in %s at position %d! Node name expected but '%s' is not valid name.",
 							c, s, i, name));
 				}
+				// new current
+				current = new TreeNode(name);
+				work.setLength(0);
+				
+				// add current to root
+				root.addChild(current);
+				
 				// push existing root to stack
 				stack.add(stack.size(), root);
+				System.out.printf("Stack Length: %d", stack.size());							
 				// set current root to new item.
-				root = new TreeNode(name);
-				work.setLength(0);
+				root = current;
+
 				break;
 			case ')':
 
-				name = work.toString();
-				if (!validNodeName(name)) {
-					throw new RuntimeException(String.format(
-							"Invalid character '%s' in %s at position %d! Node name expected but '%s' is not valid name.",
-							c, s, i, name));
-				}
-
-				// add child to current root
-				root.addChild(name);
-
-				// if stack is empty, then cannot pop
-				if (stack.size() == 0) {
-					throw new RuntimeException(String.format(
-							"Invalid character '%s' in %s at position %d! Node name or '(' expected.", c, s, i));
-				}
-				// add current root to parent children
-				stack.get(stack.size() - 1).addChild(root);
-
-				// pop stack
-				root = stack.remove(stack.size() - 1);
-				work.setLength(0);
-				break;
-			case ',':
-				// check if name exist.
 				name = work.toString();
 				System.out.println(String.format("'%s'", name));
 				if (!validNodeName(name)) {
@@ -125,33 +112,73 @@ public class TreeNode implements Iterator<TreeNode> {
 							"Invalid character '%s' in %s at position %d! Node name expected but '%s' is not valid name.",
 							c, s, i, name));
 				}
-				// add to root as children
-				root.addChild(name);
+
+				// create node
+				current = new TreeNode(name);
+				work.setLength(0);
+				
+				// add child to current root
+				root.addChild(current);
+
+				// if stack is empty, then cannot pop
+				if (stack.size() == 0) {
+					throw new RuntimeException(String.format(
+							"Invalid character '%s' in %s at position %d! Node name or '(' expected.", c, s, i));
+				}
+
+				// pop stack
+				root = stack.remove(stack.size() - 1);
+				
+				System.out.printf("Stack Length: %d", stack.size());
+				
+				break;
+			case ',':
+				// check if name exist.
+				name = work.toString();
+				System.out.println(String.format("'%s'", name));
+				if (!validNodeName(name)) {
+					throw new RuntimeException(String.format(
+							"Invalid characters '%s' in %s at position %d! Node name expected but '%s' is not valid name.",
+							c, s, i, name));
+				}
+				
+				// create node
+				current = new TreeNode(name);
 				work.setLength(0); // reset work buffer
+				
+				// add to root as children
+				root.addChild(current);
+				
 
 				break;
 			default:
-				work.append(c);
-				if (!validNodeName(work.toString())) {
+				String test = work.toString()+c;								
+				if (!validNodeName(test)) {
 					throw new RuntimeException(String.format("Invalid character '%s' in %s at position %d!", c, s, i));
 				}
+				
+				work.append(c);
 				break;
 
 			}
 
 		}
 
-		// happens when there are no children
+		// happens when there are no children at end of last string
 		if (work.length() != 0) {
 			name = work.toString();
+			System.out.printf("Node name '%s' to add", name );
 			if (!validNodeName(name)) {
 				throw new RuntimeException(String.format(
 						"Invalid character '%s' in %s at position %d! Node name expected but '%s' is not valid name.",
 						c, s, i, name));
 			}
-			root.addChild(name);
+			
+			current = new TreeNode(name);
 			work.setLength(0); // reset work buffer
-			stack.add(stack.size(), root);
+			
+			root.addChild(current);
+						
 		}
 
 		// if stack is not empty, premature end of input reached
@@ -162,14 +189,40 @@ public class TreeNode implements Iterator<TreeNode> {
 
 		root = stack.remove(stack.size() - 1);
 
+		TreeNode[] aaa = root.asArray();
+		
+		System.out.println("---");
+		
+		for (int j = 0; j < aaa.length; j++) {
+			System.out.println(aaa[j].getName());
+		}
+		
 		// return;
+		System.out.println(root.getFirstChild().rightParentheticRepresentation());
 		return root.getFirstChild();
 
 	}
 
 	public String rightParentheticRepresentation() {
-		StringBuffer b = new StringBuffer();
-		// TODO!!! create the result in buffer b
+		StringBuffer b = new StringBuffer();		
+		StringBuffer cc = new StringBuffer();
+		
+		String c = ""; 
+		Iterator<TreeNode> children = children();
+		
+		
+		while (children != null) {									
+			cc.append(c).append( ((TreeNode) children).rightParentheticRepresentation());
+			c = ",";
+			children = (TreeNode) children.next();
+		}
+		
+		if (cc.length() > 0) {
+			b.append("(").append(cc.toString()).append(")");
+		}
+		
+		b.append(this.getName());
+		
 		return b.toString();
 	}
 
