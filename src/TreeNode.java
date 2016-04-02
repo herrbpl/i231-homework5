@@ -62,6 +62,12 @@ public class TreeNode implements Iterator<TreeNode> {
 		return !m.find();		
 	}
 
+	/**
+	 * Parse tree string left parenthesis representation
+	 * @param s - string representing tree, can have only single root!
+	 * @return
+	 */
+	
 	public static TreeNode parsePrefix(String s) {
 
 		System.out.printf("Parsing '%s' \n", s);
@@ -73,13 +79,13 @@ public class TreeNode implements Iterator<TreeNode> {
 
 		ArrayList<TreeNode> stack = new ArrayList<TreeNode>();
 		
-		TreeNode root = new TreeNode("root"); // this we must hide 
+		TreeNode root = null; // new TreeNode("root"); // this we must hide 
 												
-		stack.add(root);
+		//stack.add(root);
 		
 		TreeNode current = null;		
 		
-		String name = ""; // name of node
+		String token = ""; // name of node
 		
 		int i;
 		for (i = 0; i < s.length(); i++) {
@@ -92,54 +98,59 @@ public class TreeNode implements Iterator<TreeNode> {
 			switch (c) {
 			case '(':
 
-				name = work.toString();
-				if (!validNodeName(name)) {
+				token = work.toString();
+				if (!validNodeName(token)) {
 					throw new RuntimeException(String.format(
-							"'%s'^ Invalid character '%s'. Node name  or '(' expected but '%s' is not valid name.", parsed, c, name));
+							"'%s'^ Invalid character '%s'. Node name  or '(' expected but '%s' is not valid name.", parsed, c, token));
 							
 				}
 				// new current
-				current = new TreeNode(name);
+				current = new TreeNode(token);
 				work.setLength(0);
 				
-				// add current to root
-				root.addChild(current);
+				if (root !=null) {
+					// add current to root
+					root.addChild(current);
+				} else {
+					root = current;
+				}
 				
 				// push existing root to stack
 				stack.add(stack.size(), root);
-				//System.out.printf("Stack Length: %d", stack.size());							
+				
 				// set current root to new item.
-				root = current;
+				root = current;							
+
 
 				break;
 			case ')':
 
-				name = work.toString();
-				System.out.println(String.format("'%s'", name));
+				token = work.toString();
+				System.out.println(String.format("'%s'", token));
 				
 				// cannot do this operation if stack is empty
 				if (stack.size() == 0) {
 					throw new RuntimeException(String.format(
-							"'%s'^ Invalid character '%s'. Node name  or '(' expected but '%s' is not valid name.", parsed, c, name));
+							"'%s'^ Invalid character '%s'. Node name  or '(' expected but '%s' is not valid name.", parsed, c, token));
 				}
 				
-				if (name.equals("")) {
+				if (token.equals("")) {
 					// empty name is allowed if last operation was closing of parentheses / popping stack. 
 					if (i <= 0 || s.charAt(i-1) != ')') {
 						throw new RuntimeException(String.format(
 								"'%s'^ Invalid character '%s'. Node name or '(' expected but '%s' is not valid name.",
-								parsed, c, name));
+								parsed, c, token));
 					}
 				} else {
 				
-					if (!validNodeName(name) ) {
+					if (!validNodeName(token) ) {
 						throw new RuntimeException(String.format(
-								"'%s'^ Invalid character '%s'. Node name  or '(' expected but '%s' is not valid name.", parsed, c, name));
+								"'%s'^ Invalid character '%s'. Node name  or '(' expected but '%s' is not valid name.", parsed, c, token));
 						
 					}
 	
 					// create node
-					current = new TreeNode(name);
+					current = new TreeNode(token);
 					work.setLength(0);
 					
 					// add child to current root
@@ -154,26 +165,33 @@ public class TreeNode implements Iterator<TreeNode> {
 				break;
 			case ',':
 				// check if name exist.
-				name = work.toString();
+				token = work.toString();
 				
-				System.out.println(String.format("'%s'", name));
+				System.out.println(String.format("'%s'", token));							
 				
-				if (name.equals("")) {
+				
+				// cannot add if stack is empty
+				if (stack.size() == 0) {
+					throw new RuntimeException(String.format(
+							"'%s'^  End of input expected but '%s' encountered.", parsed, token));
+				}
+				
+				if (token.equals("")) {
 					// empty name is allowed if last operation was closing of parentheses / popping stack. 
 					if (i <= 0 || s.charAt(i-1) != ')') {
 						throw new RuntimeException(String.format(
 								"'%s'^ Invalid character '%s'. Node name or '(' expected but '%s' is not valid name.",
-								parsed, c, name));
+								parsed, c, token));
 					}
 				} else {			
-					
-					if (!validNodeName(name)) {
+															
+					if (!validNodeName(token)) {
 						throw new RuntimeException(String.format(
 								"'%s'^ Invalid character '%s'. Node name or '(' expected but '%s' is not valid name.",
-								parsed, c, name));
+								parsed, c, token));
 					}
 					// create node
-					current = new TreeNode(name);
+					current = new TreeNode(token);
 					work.setLength(0); // reset work buffer
 
 					// add to root as children
@@ -185,7 +203,7 @@ public class TreeNode implements Iterator<TreeNode> {
 				String test = work.toString()+c;								
 				if (!validNodeName(test)) {
 					throw new RuntimeException(String.format(
-							"'%s'^ Invalid character '%s'. Node name or '(' expected but '%s' is not valid name.", parsed, c, name));					
+							"'%s'^ Invalid character '%s'. Node name or '(' expected but '%s' is not valid name.", parsed, c, token));					
 				}
 				
 				work.append(c);
@@ -196,28 +214,31 @@ public class TreeNode implements Iterator<TreeNode> {
 		}
 
 		// happens when there are no children at end of last string
-		if (work.length() != 0) {
-			name = work.toString();
-			System.out.printf("Node name '%s' to add", name );
-			if (!validNodeName(name)) {
+		if (work.length() != 0) {			
+			token = work.toString();
+			if (root != null) {
 				throw new RuntimeException(String.format(
-						"'%s'^ Invalid character '%s'. Node name or '(' expected but '%s' is not valid name.", parsed, c, name));
+						"'%s'^  End of input expected but '%s' encountered.", parsed, token));
+			} else {			
+			if (!validNodeName(token)) {
+				throw new RuntimeException(String.format(
+						"'%s'^ Invalid character '%s'. Node name or '(' expected but '%s' is not valid name.", parsed, c, token));
 			}
 			
-			current = new TreeNode(name);
+			current = new TreeNode(token);
 			work.setLength(0); // reset work buffer
-			
-			root.addChild(current);
+				root = current;
+			}			
 						
 		}
 
 		// if stack is not empty, premature end of input reached
-		if (stack.size() != 1) {
+		if (stack.size() > 0) {
 			throw new RuntimeException(
 					String.format("Invalid input '%s'. Premature end of input at position %d", s, i));
 		}
 
-		root = stack.remove(stack.size() - 1);
+		//root = stack.remove(stack.size() - 1);
 
 //		TreeNode[] aaa = root.asArray();
 				
@@ -228,8 +249,8 @@ public class TreeNode implements Iterator<TreeNode> {
 		
 		// return;
 
-		System.out.printf("Parsing completed, got '%s'\n", root.getFirstChild().rightParentheticRepresentation());
-		return root.getFirstChild();
+		System.out.printf("Parsing completed, got '%s'\n", root.rightParentheticRepresentation());
+		return root;
 
 	}
 
