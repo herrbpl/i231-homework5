@@ -269,59 +269,7 @@ public class TreeNode implements Iterator<TreeNode> {
 	}
 
 	public static void main(String[] param) {
-		String d = "";
-		boolean stackTrace = false;
-		if (param.length > 0) {
-			if (param[0].equals("-i") || param[0].equals("-id") ) {
-				
-				if (param[0].equals("-id")) {
-				  System.out.println("Stack trace print enabled!");
-				  stackTrace = true;
-				}
-				System.out.println("Interactive mode. Enter empty string to quit");
-				String input = TextIO.getlnString();
-				while(!input.equals("")) {
-					
-					System.out.printf("Interpreting '%s' = ", input);
-					try {
-						d = TreeNode.parsePrefix(input).rightParentheticRepresentation();
-						System.out.println(d);
-					} catch (RuntimeException e) {
-						System.out.println(e.getMessage());
-						if (stackTrace) {
-							e.printStackTrace();
-						}
-					}
-					System.out.println("Interactive mode. Enter empty string to quit");
-					input = TextIO.getlnString();
-					
-				}
-				return;
-			} else if (param[0].equals("-s")) {
-				// TODO!!! Your tests here!
-				
-				for (int i = 1; i < param.length; i++) {
-					System.out.printf("Interpreting '%s' = ", param[i]);
-					try {
-						d = TreeNode.parsePrefix(param[i]).rightParentheticRepresentation();
-						System.out.println(d);
-					} catch (RuntimeException e) {
-						System.out.println(e.getMessage());
-					}			
-				}
-				return;
-			} 	
-		} else {
-			System.out.println("use -i for interactive mode");
-			System.out.println("use -s to interpret arguments");
-		}		
 		
-		/*
-		String s = "A(B1,C,D)";
-		TreeNode t = TreeNode.parsePrefix(s);
-		String v = t.rightParentheticRepresentation();
-		System.out.println(s + " ==> " + v); // A(B1,C,D) ==> (B1,C,D)A
-		*/
 	}
 
 	public String getName() {
@@ -433,11 +381,7 @@ public class TreeNode implements Iterator<TreeNode> {
 
 			if (((TreeNode) children) == child)
 				return ((TreeNode) children);
-/*
-			// no children for node
-			if (children == null)
-				return null;
-*/
+
 			// recursively look for child
 			result = ((TreeNode) children).findChild(child);
 			if (result != null)
@@ -493,11 +437,6 @@ public class TreeNode implements Iterator<TreeNode> {
 			if (posCounter <= 0)
 				return ((TreeNode) children);
 
-			/*
-			// no children for node
-			if (children == null)
-				return null;
-*/
 			// recursively look for child
 			result = ((TreeNode) children).find(name, posCounter);
 			if (result != null)
