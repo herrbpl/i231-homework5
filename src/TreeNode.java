@@ -1,12 +1,17 @@
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TreeNode implements Iterator<TreeNode> {
 
 	private String name;
 	private TreeNode firstChild;
 	private TreeNode nextSibling;
-
+	
+	// used for name testing
+	static private Pattern invalidNamePattern = Pattern.compile("([\\s\\(\\),])+");
+	
 	/**
 	 * TreeNode object / node
 	 * 
@@ -45,24 +50,26 @@ public class TreeNode implements Iterator<TreeNode> {
 
 	/**
 	 * Checks for valid node name
-	 * 
+	 * Node name must be non-empty and must not contain round brackets, 
+	 * commas and whitespace symbols.
 	 * @param n
 	 *            - node name
 	 * @return true if name is valid
 	 */
 	public static boolean validNodeName(String n) {
-		if (n.matches(".*([,\\s()])+.*")) {
-			return false;
-		}
-		if (n.equals("")) return false;
-		return true;
+		if (n.trim().equals("")) return false;
+		Matcher m = invalidNamePattern.matcher(n);
+		return !m.find();		
 	}
 
 	public static TreeNode parsePrefix(String s) {
 
+		System.out.printf("Parsing '%s' \n", s);
+		
 		// start parsing
 		char c = ' ';
 		StringBuilder work = new StringBuilder();
+		StringBuilder parsed = new StringBuilder();
 
 		ArrayList<TreeNode> stack = new ArrayList<TreeNode>();
 		
@@ -70,13 +77,15 @@ public class TreeNode implements Iterator<TreeNode> {
 												
 		stack.add(root);
 		
-		TreeNode current = null;
+		TreeNode current = null;		
 		
-		String name = "";
+		String name = ""; // name of node
+		
 		int i;
 		for (i = 0; i < s.length(); i++) {
-
+		
 			c = s.charAt(i);
+			parsed.append(c);
 
 			System.out.println(String.format("%d:%s", i, c));
 
@@ -86,8 +95,8 @@ public class TreeNode implements Iterator<TreeNode> {
 				name = work.toString();
 				if (!validNodeName(name)) {
 					throw new RuntimeException(String.format(
-							"Invalid character '%s' in %s at position %d! Node name expected but '%s' is not valid name.",
-							c, s, i, name));
+							"'%s'^ Invalid character '%s'. Node name  or '(' expected but '%s' is not valid name.", parsed, c, name));
+							
 				}
 				// new current
 				current = new TreeNode(name);
@@ -98,7 +107,7 @@ public class TreeNode implements Iterator<TreeNode> {
 				
 				// push existing root to stack
 				stack.add(stack.size(), root);
-				System.out.printf("Stack Length: %d", stack.size());							
+				//System.out.printf("Stack Length: %d", stack.size());							
 				// set current root to new item.
 				root = current;
 
@@ -107,54 +116,76 @@ public class TreeNode implements Iterator<TreeNode> {
 
 				name = work.toString();
 				System.out.println(String.format("'%s'", name));
-				if (!validNodeName(name)) {
-					throw new RuntimeException(String.format(
-							"Invalid character '%s' in %s at position %d! Node name expected but '%s' is not valid name.",
-							c, s, i, name));
-				}
-
-				// create node
-				current = new TreeNode(name);
-				work.setLength(0);
 				
-				// add child to current root
-				root.addChild(current);
-
-				// if stack is empty, then cannot pop
+				// cannot do this operation if stack is empty
 				if (stack.size() == 0) {
 					throw new RuntimeException(String.format(
-							"Invalid character '%s' in %s at position %d! Node name or '(' expected.", c, s, i));
+							"'%s'^ Invalid character '%s'. Node name  or '(' expected but '%s' is not valid name.", parsed, c, name));
 				}
+				
+				if (name.equals("")) {
+					// empty name is allowed if last operation was closing of parentheses / popping stack. 
+					if (i <= 0 || s.charAt(i-1) != ')') {
+						throw new RuntimeException(String.format(
+								"'%s'^ Invalid character '%s'. Node name or '(' expected but '%s' is not valid name.",
+								parsed, c, name));
+					}
+				} else {
+				
+					if (!validNodeName(name) ) {
+						throw new RuntimeException(String.format(
+								"'%s'^ Invalid character '%s'. Node name  or '(' expected but '%s' is not valid name.", parsed, c, name));
+						
+					}
+	
+					// create node
+					current = new TreeNode(name);
+					work.setLength(0);
+					
+					// add child to current root
+					root.addChild(current);
 
+				}
 				// pop stack
 				root = stack.remove(stack.size() - 1);
 				
-				System.out.printf("Stack Length: %d", stack.size());
+				//System.out.printf("Stack Length: %d", stack.size());
 				
 				break;
 			case ',':
 				// check if name exist.
 				name = work.toString();
+				
 				System.out.println(String.format("'%s'", name));
-				if (!validNodeName(name)) {
-					throw new RuntimeException(String.format(
-							"Invalid characters '%s' in %s at position %d! Node name expected but '%s' is not valid name.",
-							c, s, i, name));
-				}
 				
-				// create node
-				current = new TreeNode(name);
-				work.setLength(0); // reset work buffer
-				
-				// add to root as children
-				root.addChild(current);
-				
+				if (name.equals("")) {
+					// empty name is allowed if last operation was closing of parentheses / popping stack. 
+					if (i <= 0 || s.charAt(i-1) != ')') {
+						throw new RuntimeException(String.format(
+								"'%s'^ Invalid character '%s'. Node name or '(' expected but '%s' is not valid name.",
+								parsed, c, name));
+					}
+				} else {			
+					
+					if (!validNodeName(name)) {
+						throw new RuntimeException(String.format(
+								"'%s'^ Invalid character '%s'. Node name or '(' expected but '%s' is not valid name.",
+								parsed, c, name));
+					}
+					// create node
+					current = new TreeNode(name);
+					work.setLength(0); // reset work buffer
+
+					// add to root as children
+					root.addChild(current);
+				} 
 
 				break;
 			default:
 				String test = work.toString()+c;								
 				if (!validNodeName(test)) {
-					throw new RuntimeException(String.format("Invalid character '%s' in %s at position %d!", c, s, i));
+					throw new RuntimeException(String.format(
+							"'%s'^ Invalid character '%s'. Node name or '(' expected but '%s' is not valid name.", parsed, c, name));					
 				}
 				
 				work.append(c);
@@ -170,8 +201,7 @@ public class TreeNode implements Iterator<TreeNode> {
 			System.out.printf("Node name '%s' to add", name );
 			if (!validNodeName(name)) {
 				throw new RuntimeException(String.format(
-						"Invalid character '%s' in %s at position %d! Node name expected but '%s' is not valid name.",
-						c, s, i, name));
+						"'%s'^ Invalid character '%s'. Node name or '(' expected but '%s' is not valid name.", parsed, c, name));
 			}
 			
 			current = new TreeNode(name);
@@ -189,16 +219,16 @@ public class TreeNode implements Iterator<TreeNode> {
 
 		root = stack.remove(stack.size() - 1);
 
-		TreeNode[] aaa = root.asArray();
+//		TreeNode[] aaa = root.asArray();
+				
 		
-		System.out.println("---");
-		
-		for (int j = 0; j < aaa.length; j++) {
-			System.out.println(aaa[j].getName());
-		}
+//		for (int j = 0; j < aaa.length; j++) {
+//			System.out.println(aaa[j].getName());
+//		}
 		
 		// return;
-		System.out.println(root.getFirstChild().rightParentheticRepresentation());
+
+		System.out.printf("Parsing completed, got '%s'\n", root.getFirstChild().rightParentheticRepresentation());
 		return root.getFirstChild();
 
 	}

@@ -1,4 +1,6 @@
 import static org.junit.Assert.*;
+
+
 import org.junit.Test;
 
 /**
@@ -33,12 +35,15 @@ public class TreeNodeTest {
 	}
 	
 	@Test(timeout = 1000)
-	public void testNameValidator() {
+	public void testNameValidator() {					
+		
+		assertFalse(TreeNode.validNodeName(""));
 		assertFalse(TreeNode.validNodeName(" "));
 		assertFalse(TreeNode.validNodeName(","));
 		assertFalse(TreeNode.validNodeName("(  "));
 		assertFalse(TreeNode.validNodeName(")"));
 		assertFalse(TreeNode.validNodeName("A,\t"));
+		assertFalse(TreeNode.validNodeName("\t"));
 	}
 	
 	@Test(expected = RuntimeException.class)
@@ -199,7 +204,7 @@ public class TreeNodeTest {
 		TreeNode t = TreeNode.parsePrefix("A,B)");
 	}
 
-	@Test
+	@Test(expected=RuntimeException.class)
 	public void testInputWithoutBrackets() {
 		TreeNode t = TreeNode.parsePrefix("A,B");
 	}
