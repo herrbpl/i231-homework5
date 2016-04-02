@@ -239,4 +239,11 @@ public class TreeNodeTest {
 		TreeNode root = TreeNode.parsePrefix("");
 	}
 
+	@Test(expected = RuntimeException.class)
+	public void testNoCommaAfterParenthesis() {
+		TreeNode root = TreeNode.parsePrefix("w(a,b(c)d)");
+	}
+	
+	
+	
 }
